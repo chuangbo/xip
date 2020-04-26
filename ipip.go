@@ -21,6 +21,11 @@ func ipipOutput(ip net.IP) {
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode != 200 {
+		log.Printf("http error: %s", clr.Red(response.Status))
+		return
+	}
+
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Printf("could not read response from ipip: %v", clr.Red(err))
