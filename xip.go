@@ -33,8 +33,14 @@ func main() {
 	}
 	defer db.Close()
 
+	fmt.Println("GeoIP2")
 	for _, ip := range ips {
 		output(db, ip)
+	}
+
+	fmt.Println("ipip.net")
+	for _, ip := range ips {
+		ipipOutput(ip)
 	}
 }
 
@@ -64,7 +70,7 @@ func output(db *geoip2.Reader, ip net.IP) {
 
 	record, err := db.City(ip)
 	if err != nil {
-		log.Printf("error reading db: %v", err)
+		log.Printf("error reading db: %v", clr.Red(err))
 		return
 	}
 
