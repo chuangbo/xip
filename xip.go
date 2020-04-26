@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	clr "github.com/logrusorgru/aurora"
 	"github.com/oschwald/geoip2-golang"
 )
 
@@ -23,12 +24,12 @@ func main() {
 
 	ips, err := getIPs()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(clr.Red(err))
 	}
 
 	db, err := geoip2.Open(*dbFile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(clr.Red(err))
 	}
 	defer db.Close()
 
@@ -68,19 +69,15 @@ func output(db *geoip2.Reader, ip net.IP) {
 	}
 
 	if record.City.GeoNameID != 0 {
-		fmt.Printf("\t%s %s", record.City.Names["en"], record.City.Names["zh-CN"])
+		fmt.Printf("\t%s %s", clr.Cyan(record.City.Names["en"]), clr.Cyan(record.City.Names["zh-CN"]))
 	}
 
 	for _, s := range record.Subdivisions {
-		fmt.Printf("\t%s %s", s.Names["en"], s.Names["zh-CN"])
+		fmt.Printf("\t%s %s", clr.Green(s.Names["en"]), clr.Green(s.Names["zh-CN"]))
 	}
 
 	if record.Country.GeoNameID != 0 {
-		fmt.Printf("\t%s %s (%s)", record.Country.Names["en"], record.Country.Names["zh-CN"], record.Country.IsoCode)
-	}
-
-	if record.Location.TimeZone != "" {
-		fmt.Printf("\tTimeZone: %s", record.Location.TimeZone)
+		fmt.Printf("\t%s %s %s", clr.Magenta(record.Country.Names["en"]), clr.Magenta(record.Country.Names["zh-CN"]), record.Country.IsoCode)
 	}
 
 	fmt.Println()
