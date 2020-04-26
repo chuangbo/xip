@@ -14,7 +14,10 @@ import (
 )
 
 func main() {
-	dbFile := flag.String("db", "/usr/local/etc/xip/GeoLite2-City/GeoLite2-City.mmdb", "mmdb file")
+	dbFile := flag.String("geoip2-city", "/usr/local/etc/xip/GeoLite2-City/GeoLite2-City.mmdb", "mmdb file")
+	enableGeoIP := flag.Bool("geoip2", true, "enable geoip2")
+	enableIPIP := flag.Bool("ipip", true, "enable ipip.net")
+
 	flag.Parse()
 
 	if flag.NArg() == 0 {
@@ -33,14 +36,18 @@ func main() {
 	}
 	defer db.Close()
 
-	fmt.Println("GeoIP2")
-	for _, ip := range ips {
-		output(db, ip)
+	if *enableGeoIP {
+		fmt.Println("GeoIP2")
+		for _, ip := range ips {
+			output(db, ip)
+		}
 	}
 
-	fmt.Println("ipip.net")
-	for _, ip := range ips {
-		ipipOutput(ip)
+	if *enableIPIP {
+		fmt.Println("ipip.net")
+		for _, ip := range ips {
+			ipipOutput(ip)
+		}
 	}
 }
 
