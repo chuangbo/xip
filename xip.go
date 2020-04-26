@@ -21,7 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ip, err := getIP()
+	ips, err := getIPs()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,14 +32,12 @@ func main() {
 	}
 	defer db.Close()
 
-	record, err := db.City(ip)
-	if err != nil {
-		log.Fatal(err)
+	for _, ip := range ips {
+		output(db, ip)
 	}
-	output(record)
 }
 
-func getIP() (net.IP, error) {
+func getIPs() ([]net.IP, error) {
 	ipArg := flag.Arg(0)
 
 	// read from stdin if ip arg is `-`
@@ -54,21 +52,36 @@ func getIP() (net.IP, error) {
 
 	ip := net.ParseIP(ipArg)
 	if ip == nil {
-		return nil, fmt.Errorf("invalid ip: %s", ipArg)
+		return net.LookupIP(ipArg)
 	}
 
-	return ip, nil
+	return []net.IP{ip}, nil
 }
 
-func output(record *geoip2.City) {
+func output(db *geoip2.Reader, ip net.IP) {
+	fmt.Print(ip)
+
+	record, err := db.City(ip)
+	if err != nil {
+		log.Printf("error reading db: %v", err)
+		return
+	}
+
 	if record.City.GeoNameID != 0 {
-		fmt.Printf("%s %s\n", record.City.Names["en"], record.City.Names["zh-CN"])
+		fmt.Printf("\t%s %s", record.City.Names["en"], record.City.Names["zh-CN"])
 	}
 
 	for _, s := range record.Subdivisions {
-		fmt.Printf("%s %s\n", s.Names["en"], s.Names["zh-CN"])
+		fmt.Printf("\t%s %s", s.Names["en"], s.Names["zh-CN"])
 	}
 
-	fmt.Printf("%s %s (%s)\n", record.Country.Names["en"], record.Country.Names["zh-CN"], record.Country.IsoCode)
-	fmt.Printf("TimeZone: %s\n", record.Location.TimeZone)
+	if record.Country.GeoNameID != 0 {
+		fmt.Printf("\t%s %s (%s)", record.Country.Names["en"], record.Country.Names["zh-CN"], record.Country.IsoCode)
+	}
+
+	if record.Location.TimeZone != "" {
+		fmt.Printf("\tTimeZone: %s", record.Location.TimeZone)
+	}
+
+	fmt.Println()
 }
