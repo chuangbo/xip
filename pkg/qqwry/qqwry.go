@@ -59,6 +59,7 @@ func (record *Record) String() string {
 // Query ip geo info
 func (r *Reader) Query(ip net.IP) (*Record, error) {
 	rq := &Record{}
+
 	if r.buff == nil {
 		return nil, fmt.Errorf("db not initialized")
 	}
@@ -66,7 +67,12 @@ func (r *Reader) Query(ip net.IP) (*Record, error) {
 	var country []byte
 	var area []byte
 
-	offset := r.binSearch(binary.BigEndian.Uint32(ip.To4()))
+	p4 := ip.To4()
+	if len(p4) != net.IPv4len {
+		return nil, fmt.Errorf("not a valid ipv4 address")
+	}
+
+	offset := r.binSearch(binary.BigEndian.Uint32(p4))
 	if offset <= 0 {
 		return rq, nil
 	}
