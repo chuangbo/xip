@@ -9,14 +9,20 @@ import (
 	"os"
 	"strings"
 
+	"github.com/chuangbo/xip/pkg/qqwry"
 	clr "github.com/logrusorgru/aurora"
 	"github.com/oschwald/geoip2-golang"
 )
 
 func main() {
-	dbFile := flag.String("geoip2-city", "/usr/local/etc/xip/GeoLite2-City/GeoLite2-City.mmdb", "mmdb file")
 	enableGeoIP := flag.Bool("geoip2", true, "enable geoip2")
-	enableIPIP := flag.Bool("ipip", true, "enable ipip.net")
+	enableQQWRY := flag.Bool("qqwry", true, "enable 纯真IP数据库")
+	enableIPIP := flag.Bool("ipip", false, "enable ipip.net")
+
+	geoip2CityDB := flag.String("geoip2-city-db", "/usr/local/etc/xip/GeoLite2-City/GeoLite2-City.mmdb", "mmdb file")
+
+	// can be download from https://github.com/out0fmemory/qqwry.dat
+	qqwryDB := flag.String("qqwry-db", "/usr/local/etc/xip/qqwry.dat", "纯真IP数据库")
 
 	flag.Parse()
 
@@ -30,16 +36,28 @@ func main() {
 		log.Fatal(clr.Red(err))
 	}
 
-	db, err := geoip2.Open(*dbFile)
-	if err != nil {
-		log.Fatal(clr.Red(err))
-	}
-	defer db.Close()
-
 	if *enableGeoIP {
+		db, err := geoip2.Open(*geoip2CityDB)
+		if err != nil {
+			log.Fatal(clr.Red(err))
+		}
+		defer db.Close()
+
 		fmt.Println("GeoIP2")
 		for _, ip := range ips {
-			output(db, ip)
+			geoip2Output(db, ip)
+		}
+	}
+
+	if *enableQQWRY {
+		db, err := qqwry.Open(*qqwryDB)
+		if err != nil {
+			log.Fatal(clr.Red(err))
+		}
+
+		fmt.Println("纯真IP")
+		for _, ip := range ips {
+			qqwryOutput(db, ip)
 		}
 	}
 
@@ -70,28 +88,4 @@ func getIPs() ([]net.IP, error) {
 	}
 
 	return []net.IP{ip}, nil
-}
-
-func output(db *geoip2.Reader, ip net.IP) {
-	fmt.Print(ip)
-
-	record, err := db.City(ip)
-	if err != nil {
-		log.Printf("error reading db: %v", clr.Red(err))
-		return
-	}
-
-	if record.City.GeoNameID != 0 {
-		fmt.Printf("\t%s %s", clr.Cyan(record.City.Names["en"]), clr.Cyan(record.City.Names["zh-CN"]))
-	}
-
-	for _, s := range record.Subdivisions {
-		fmt.Printf("\t%s %s", clr.Green(s.Names["en"]), clr.Green(s.Names["zh-CN"]))
-	}
-
-	if record.Country.GeoNameID != 0 {
-		fmt.Printf("\t%s %s %s", clr.Magenta(record.Country.Names["en"]), clr.Magenta(record.Country.Names["zh-CN"]), record.Country.IsoCode)
-	}
-
-	fmt.Println()
 }
