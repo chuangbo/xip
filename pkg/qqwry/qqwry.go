@@ -67,12 +67,12 @@ func (r *Reader) Query(ip net.IP) (*Record, error) {
 	var country []byte
 	var area []byte
 
-	p4 := ip.To4()
-	if len(p4) != net.IPv4len {
+	ipv4 := ip.To4()
+	if ipv4 == nil {
 		return nil, fmt.Errorf("not a valid ipv4 address")
 	}
 
-	offset := r.binSearch(binary.BigEndian.Uint32(p4))
+	offset := r.binSearch(binary.BigEndian.Uint32(ipv4))
 	if offset <= 0 {
 		return rq, nil
 	}
