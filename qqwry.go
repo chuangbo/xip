@@ -19,7 +19,7 @@ func qqwryOutput(db *qqwry.Reader, ip net.IP) {
 	}
 
 	if r.City != "" {
-		fmt.Printf("\t%s", clr.Green(r.City))
+		fmt.Printf("\t%s", clr.Cyan(r.City))
 	}
 
 	if r.Country != "" {
