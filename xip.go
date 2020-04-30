@@ -1,43 +1,64 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
-	"strings"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
 	clr "github.com/logrusorgru/aurora"
+	"github.com/mitchellh/go-homedir"
 	"github.com/oschwald/geoip2-golang"
 )
 
-func main() {
-	enableGeoIP := flag.Bool("geoip2", true, "enable geoip2")
-	enableQQWRY := flag.Bool("qqwry", true, "enable 纯真IP数据库")
-	enableIPIP := flag.Bool("ipip", false, "enable ipip.net")
+var (
+	enableGeoIP  bool
+	enableQQWRY  bool
+	enableIPIP   bool
+	geoip2CityDB string
+	qqwryDB      string
+)
 
-	geoip2CityDB := flag.String("geoip2-city-db", "/usr/local/etc/xip/GeoLite2-City/GeoLite2-City.mmdb", "mmdb file")
+var (
+	defaultGeoIP2CityDB, _ = homedir.Expand("~/.config/xip/GeoLite2-City/GeoLite2-City.mmdb")
+	defaultQQWryDB, _      = homedir.Expand("~/.config/xip/qqwry.dat")
+)
+
+func main() {
+	flag.BoolVar(&enableGeoIP, "geoip2", true, "enable geoip2")
+	flag.BoolVar(&enableQQWRY, "qqwry", true, "enable 纯真IP数据库")
+	flag.BoolVar(&enableIPIP, "ipip", false, "enable ipip.net")
+
+	flag.StringVar(&geoip2CityDB, "geoip2-city-db", defaultGeoIP2CityDB, "mmdb file")
 
 	// can be download from https://github.com/out0fmemory/qqwry.dat
-	qqwryDB := flag.String("qqwry-db", "/usr/local/etc/xip/qqwry.dat", "纯真IP数据库")
+	flag.StringVar(&qqwryDB, "qqwry-db", defaultQQWryDB, "纯真IP数据库")
 
 	flag.Parse()
+
+	if fromPipe() {
+		pipeMode()
+		return
+	}
 
 	if flag.NArg() == 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	ips, err := getIPs()
-	if err != nil {
-		log.Fatal(clr.Red(err))
+	var ips []net.IP
+	for _, arg := range flag.Args() {
+		result, err := getIPs(arg)
+		if err != nil {
+			log.Fatal(clr.Red(err))
+		}
+		ips = append(ips, result...)
 	}
 
-	if *enableGeoIP {
-		db, err := geoip2.Open(*geoip2CityDB)
+	if enableGeoIP {
+		db, err := geoip2.Open(geoip2CityDB)
 		if err != nil {
 			log.Fatal(clr.Red(err))
 		}
@@ -49,8 +70,8 @@ func main() {
 		}
 	}
 
-	if *enableQQWRY {
-		db, err := qqwry.Open(*qqwryDB)
+	if enableQQWRY {
+		db, err := qqwry.Open(qqwryDB)
 		if err != nil {
 			log.Fatal(clr.Red(err))
 		}
@@ -61,7 +82,7 @@ func main() {
 		}
 	}
 
-	if *enableIPIP {
+	if enableIPIP {
 		fmt.Println("ipip.net")
 		for _, ip := range ips {
 			ipipOutput(ip)
@@ -69,23 +90,11 @@ func main() {
 	}
 }
 
-func getIPs() ([]net.IP, error) {
-	ipArg := flag.Arg(0)
-
-	// read from stdin if ip arg is `-`
-	if ipArg == "-" {
-		reader := bufio.NewReader(os.Stdin)
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			return nil, err
-		}
-		ipArg = strings.Trim(text, " \n")
-	}
-
-	ip := net.ParseIP(ipArg)
+func getIPs(arg string) ([]net.IP, error) {
+	ip := net.ParseIP(arg)
 	if ip == nil {
-		return net.LookupIP(ipArg)
+		// host
+		return net.LookupIP(arg)
 	}
-
 	return []net.IP{ip}, nil
 }

@@ -1,6 +1,6 @@
 # xip
 
-Get ip geo information from GeoIP2 db and ipip.net free api.
+Get ip geo information from multiple sources.
 
 ```sh
 # quick start
@@ -11,11 +11,27 @@ GeoIP2
 1.2.3.4 APNIC Debogon-prefix网络        澳大利亚
 
 $ # pipe from stdin
-$ echo 1.1.1.1 | xip -
-GeoIP2
-1.1.1.1	Australia 澳大利亚 AU
-纯真IP
-1.1.1.1 APNIC&CloudFlare公共DNS服务器   美国
+$ dig baidu.com | xip
+
+; <<>> DiG 9.10.6 <<>> baidu.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 16632
+;; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 512
+;; QUESTION SECTION:
+;baidu.com.			IN	A
+
+;; ANSWER SECTION:
+baidu.com.		38	IN	A	220.181.38.148 	电信IDC机房 北京市
+baidu.com.		38	IN	A	39.156.69.79 	移动 北京市
+
+;; Query time: 30 msec
+;; SERVER: 8.8.8.8#53(8.8.8.8) 	加利福尼亚州圣克拉拉县山景市谷歌公司DNS服务器 美国
+;; WHEN: Thu Apr 30 17:46:12 CST 2020
+;; MSG SIZE  rcvd: 70
 
 $ # by host
 $ xip google.com
