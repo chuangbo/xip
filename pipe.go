@@ -3,13 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"regexp"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
-	clr "github.com/logrusorgru/aurora"
 )
 
 var (
@@ -24,21 +22,15 @@ func fromPipe() bool {
 }
 
 // traceroute baidu.com | xip
-func pipeMode() {
-	db, err := qqwry.Open(qqwryDB)
-	if err != nil {
-		log.Fatal(clr.Red(err))
-	}
-
+func pipeMode(db *qqwry.Reader) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
-		ipInfo := appendIPInfo(db, text)
-		fmt.Println(text, ipInfo)
+		fmt.Println(text, "\t", findGeoStr(db, text))
 	}
 }
 
-func appendIPInfo(db *qqwry.Reader, text string) string {
+func findGeoStr(db *qqwry.Reader, text string) string {
 	ip := regEx.FindString(text)
 	if ip == "" {
 		return ""
@@ -49,11 +41,5 @@ func appendIPInfo(db *qqwry.Reader, text string) string {
 		return ""
 	}
 
-	r, err := db.Query(ipv4)
-
-	if err != nil {
-		return fmt.Sprintf("error reading db: %v", clr.Red(err))
-	}
-
-	return fmt.Sprintf("\t%s %s", clr.Cyan(r.City), clr.Magenta(r.Country))
+	return geoString(db, ipv4)
 }
