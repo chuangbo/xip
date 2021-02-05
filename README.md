@@ -38,9 +38,15 @@ $ xip google.com
 
 ## Installation
 
-`go get github.com/chuangbo/xip`
+`go install github.com/chuangbo/xip`
 
-Download QQWRY db and put it to location `/usr/local/etc/xip/qqwry.dat`
+Download QQWRY db (defaults to `~/.config/xip/qqwry.dat`)
+
+```sh
+$ xip update
+Downloading to "/Users/me/.config/xip/qqwry.dat"
+332.01 KiB / 5.13 MiB [==>---------------------------------------|  59s ] 83.00 KiB/s
+```
 
 ## Reference
 

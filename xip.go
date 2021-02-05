@@ -24,12 +24,20 @@ var (
 
 func main() {
 	// can be download from https://github.com/out0fmemory/qqwry.dat
-	flag.StringVar(&dbFile, "qqwry-db", defaultDbFile, "纯真IP数据库")
+	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库")
 
 	flag.Parse()
 
+	if flag.Arg(0) == "update" {
+		if err := download(dbFile); err != nil {
+			log.Fatal(clr.Red(err))
+		}
+		os.Exit(0)
+	}
+
 	db, err := qqwry.Open(dbFile)
 	if err != nil {
+		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 update 命令下载\n", dbFile)
 		log.Fatal(clr.Red(err))
 	}
 
