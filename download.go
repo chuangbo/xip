@@ -29,6 +29,11 @@ func download(filename string) error {
 	fmt.Printf("Downloading to \"%s\"\n", filename)
 
 	dir, name := filepath.Split(filename)
+
+	if err := os.MkdirAll(dir, os.ModeDir); err != nil {
+		return fmt.Errorf("could not create temp dir: %w", err)
+	}
+
 	temp, err := ioutil.TempFile(dir, name+".*.temp")
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
