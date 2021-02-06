@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
@@ -28,10 +28,10 @@ func download(filename string) error {
 
 	fmt.Printf("Downloading to \"%s\"\n", filename)
 
-	dir, name := path.Split(filename)
+	dir, name := filepath.Split(filename)
 	temp, err := ioutil.TempFile(dir, name+".*.temp")
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create temp file: %w", err)
 	}
 
 	p, bar := progressBar(total, dr)
