@@ -4,7 +4,9 @@ import (
 	"compress/zlib"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path"
 	"time"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
@@ -26,7 +28,8 @@ func download(filename string) error {
 
 	fmt.Printf("Downloading to \"%s\"\n", filename)
 
-	f, err := os.Create(filename)
+	dir, name := path.Split(filename)
+	temp, err := ioutil.TempFile(dir, name+".*.temp")
 	if err != nil {
 		return err
 	}
@@ -42,13 +45,21 @@ func download(filename string) error {
 	}
 
 	// save to file
-	if _, err := io.Copy(f, z); err != nil {
-		return err
+	if _, err := io.Copy(temp, z); err != nil {
+		return fmt.Errorf("could not download file: %w", err)
 	}
 	// wait for our bar to complete and flush
 	p.Wait()
 
-	return f.Close()
+	if err := temp.Close(); err != nil {
+		return fmt.Errorf("could not save file: %w", err)
+	}
+
+	if err := os.Rename(temp.Name(), filename); err != nil {
+		return fmt.Errorf("could not move temp file: %w", err)
+	}
+
+	return nil
 }
 
 func progressBar(total int64, r io.Reader) (*mpb.Progress, io.ReadCloser) {
