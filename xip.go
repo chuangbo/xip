@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
-	clr "github.com/logrusorgru/aurora"
+	"github.com/fatih/color"
 	"github.com/mitchellh/go-homedir"
 )
 
@@ -30,7 +30,7 @@ func main() {
 
 	if flag.Arg(0) == "update" {
 		if err := download(dbFile); err != nil {
-			log.Fatal(clr.Red(err))
+			log.Fatal(err)
 		}
 		os.Exit(0)
 	}
@@ -38,7 +38,7 @@ func main() {
 	db, err := qqwry.Open(dbFile)
 	if err != nil {
 		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip update 命令下载\n", dbFile)
-		log.Fatal(clr.Red(err))
+		log.Fatal(err)
 	}
 
 	if fromPipe() {
@@ -57,8 +57,8 @@ func main() {
 func geoString(db *qqwry.Reader, ip net.IP) string {
 	r, err := db.Query(ip)
 	if err != nil {
-		return clr.Red(err).String()
+		return color.RedString("%w", err)
 	}
 
-	return fmt.Sprintf("%s %s", clr.Cyan(r.City), clr.Magenta(r.Country))
+	return fmt.Sprintf("%s %s", color.CyanString(r.City), color.MagentaString(r.Country))
 }

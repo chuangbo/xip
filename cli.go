@@ -7,7 +7,7 @@ import (
 	"net"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
-	clr "github.com/logrusorgru/aurora"
+	"github.com/fatih/color"
 )
 
 // xip 1.1.1.1 baidu.com
@@ -16,14 +16,14 @@ func cliMode(db *qqwry.Reader, args []string) {
 	for _, arg := range flag.Args() {
 		result, err := argToIPs(arg)
 		if err != nil {
-			log.Fatal(clr.Red(err))
+			log.Fatal(err)
 		}
 		ips = append(ips, result...)
 	}
 
 	for _, ip := range ips {
 		result := geoString(db, ip)
-		fmt.Printf("%s\t%s\n", ip, result)
+		fmt.Fprintf(color.Output, "%s\t%s\n", ip, result)
 	}
 }
 

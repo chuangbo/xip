@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/chuangbo/xip/pkg/qqwry"
+	"github.com/fatih/color"
 )
 
 var (
@@ -26,7 +27,7 @@ func pipeMode(db *qqwry.Reader) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
-		fmt.Println(text, "\t", findGeoStr(db, text))
+		fmt.Fprintln(color.Output, text, "\t", findGeoStr(db, text))
 	}
 }
 
