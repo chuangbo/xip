@@ -1,0 +1,15 @@
+# artifacts from pprof tooling
+*.prof
+*.test
+
+# build artifacts
+xip
+
+# mac specific
+.DS_Store
+
+# go modules
+vendor
+
+# goreleaser artifacts
+dist

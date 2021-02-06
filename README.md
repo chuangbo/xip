@@ -4,6 +4,10 @@ xip = 查 IP, Get ip geo information.
 
 ## Installation
 
+Download from [GitHub Releases](https://github.com/chuangbo/xip/releases) and place the executable file in your PATH.
+
+Or the go way:
+
 ```sh
 $ go install github.com/chuangbo/xip
 ```
