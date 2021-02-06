@@ -37,7 +37,7 @@ func main() {
 
 	db, err := qqwry.Open(dbFile)
 	if err != nil {
-		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 update 命令下载\n", dbFile)
+		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip update 命令下载\n", dbFile)
 		log.Fatal(clr.Red(err))
 	}
 
