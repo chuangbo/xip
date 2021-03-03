@@ -25,6 +25,7 @@ var (
 func main() {
 	// can be download from https://github.com/out0fmemory/qqwry.dat
 	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库")
+	v := flag.Bool("v", false, "Print the version number of xip")
 
 	flag.Parse()
 
@@ -39,6 +40,11 @@ func main() {
 	if err != nil {
 		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip update 命令下载\n", dbFile)
 		log.Fatal(err)
+	}
+
+	if *v {
+		fmt.Println(version)
+		os.Exit(0)
 	}
 
 	if fromPipe() {
