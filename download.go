@@ -30,7 +30,7 @@ func download(filename string) error {
 
 	dir, name := filepath.Split(filename)
 
-	if err := os.MkdirAll(dir, os.ModeDir); err != nil {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("could not create temp dir: %w", err)
 	}
 
