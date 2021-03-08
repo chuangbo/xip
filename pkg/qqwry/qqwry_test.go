@@ -1,6 +1,7 @@
 package qqwry
 
 import (
+	"encoding/binary"
 	"net"
 	"reflect"
 	"testing"
@@ -90,5 +91,25 @@ func TestReader_Query(t *testing.T) {
 				t.Errorf("Reader.Query() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func BenchmarkReader_readRecord(b *testing.B) {
+	r, _ := Open("testdata/qqwry.dat")
+
+	ip := net.IP{192, 168, 1, 1}
+	iplong := binary.BigEndian.Uint32(ip)
+	offset := r.search(iplong)
+
+	for n := 0; n < b.N; n++ {
+		r.readRecord(offset)
+	}
+}
+
+func BenchmarkReader_Query(b *testing.B) {
+	r, _ := Open("testdata/qqwry.dat")
+
+	for n := 0; n < b.N; n++ {
+		r.Query(net.IP{192, 168, 1, 1})
 	}
 }
