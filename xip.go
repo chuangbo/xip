@@ -23,17 +23,21 @@ var (
 )
 
 func main() {
-	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库")
-	v := flag.Bool("v", false, "Print the version number of xip")
+	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库文件路径")
+	cmdUpdate := flag.Bool("u", false, "更新纯真IP库")
+	cmdVersion := flag.Bool("v", false, "Print the version number of xip")
 
 	flag.Parse()
 
-	if *v {
-		fmt.Println(version)
+	if *cmdVersion {
+		fmt.Printf("xip: %s\n", version)
+		if db, err := qqwry.Open(dbFile); err == nil {
+			fmt.Printf("qqwry: %s\n", db.Version().City)
+		}
 		os.Exit(0)
 	}
 
-	if flag.Arg(0) == "update" {
+	if *cmdUpdate {
 		if err := download(dbFile); err != nil {
 			log.Fatal(err)
 		}
@@ -42,14 +46,9 @@ func main() {
 
 	isFromPipe := fromPipe()
 
-	if flag.NArg() == 0 && !isFromPipe {
-		flag.Usage()
-		os.Exit(1)
-	}
-
 	db, err := qqwry.Open(dbFile)
 	if err != nil {
-		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip update 命令下载\n", dbFile)
+		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip -u 命令下载\n", dbFile)
 		log.Fatal(err)
 	}
 
@@ -58,7 +57,13 @@ func main() {
 		return
 	}
 
-	cliMode(db, flag.Args())
+	if flag.NArg() > 0 {
+		cliMode(db, flag.Args())
+		return
+	}
+
+	flag.Usage()
+	os.Exit(1)
 }
 
 func geoString(db *qqwry.Reader, ip net.IP) string {
@@ -67,5 +72,9 @@ func geoString(db *qqwry.Reader, ip net.IP) string {
 		return color.RedString("%w", err)
 	}
 
+	return colorful(r)
+}
+
+func colorful(r *qqwry.Record) string {
 	return fmt.Sprintf("%s %s", color.CyanString(r.City), color.MagentaString(r.Country))
 }

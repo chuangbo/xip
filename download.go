@@ -15,9 +15,19 @@ import (
 )
 
 func download(filename string) error {
-	key, err := qqwry.GetDownloadKey()
+	key, remoteVersion, err := qqwry.GetDownloadKey()
 	if err != nil {
 		return fmt.Errorf("could not get key: %w", err)
+	}
+
+	if db, err := qqwry.Open(filename); err == nil {
+		localVersion := db.Version().City
+		if qqwry.SameVersion(remoteVersion, db.Version().City) {
+			return fmt.Errorf("当前IP库已是最新版本，无需更新: %s", localVersion)
+		}
+		fmt.Printf("更新IP库：%s => %s\n", localVersion, remoteVersion)
+	} else {
+		fmt.Printf("下载IP库：%s\n", remoteVersion)
 	}
 
 	total, dr, err := qqwry.Download(key)

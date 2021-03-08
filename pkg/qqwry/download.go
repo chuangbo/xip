@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+
+	"golang.org/x/text/encoding/simplifiedchinese"
 )
 
 const (
@@ -20,21 +23,30 @@ const (
 
 // @ref https://zhangzifan.com/update-qqwry-dat.html
 
-// GetDownloadKey reads newest key from key url
-func GetDownloadKey() (uint32, error) {
+// GetDownloadKey reads newest key and version from key url
+func GetDownloadKey() (uint32, string, error) {
 	resp, err := http.Get(KeyURL)
 	if err != nil {
-		return 0, fmt.Errorf("could open key url: %w", err)
+		return 0, "", fmt.Errorf("could open key url: %w", err)
 	}
 	defer resp.Body.Close()
 
-	buf := make([]byte, 24)
-	if _, err := io.ReadAtLeast(resp.Body, buf, len(buf)); err != nil {
-		return 0, fmt.Errorf("could not read from key url: %w", err)
+	return getUpdateInfo(resp.Body)
+}
+
+func getUpdateInfo(r io.ReadCloser) (uint32, string, error) {
+	buf, err := io.ReadAll(r)
+	if err != nil {
+		return 0, "", fmt.Errorf("could not read from key url: %w", err)
 	}
 
 	// @see https://stackoverflow.com/questions/34078427/how-to-read-packed-binary-data-in-go
-	return binary.LittleEndian.Uint32(buf[20:]), nil
+	key := binary.LittleEndian.Uint32(buf[20:24])
+
+	enc := simplifiedchinese.GBK.NewDecoder()
+	version, err := enc.Bytes(readCString(buf[24:]))
+
+	return key, string(version), nil
 }
 
 // Downloader is a reader with decryption
@@ -79,4 +91,16 @@ func Download(key uint32) (int64, io.ReadCloser, error) {
 		resp: resp,
 	}
 	return resp.ContentLength, dr, nil
+}
+
+// SameVersion compare remote version from copywrite.rar and local version from qqwry db
+// Version formats:
+// remote: 纯真IP地址数据库 2021年02月25日
+// local: 2021年02月02日IP数据
+func SameVersion(remote, local string) bool {
+	splits := strings.Split(remote, " ")
+	if len(splits) != 2 {
+		return false
+	}
+	return strings.HasPrefix(local, splits[1])
 }

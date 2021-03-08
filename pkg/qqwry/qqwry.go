@@ -3,6 +3,7 @@
 package qqwry
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io/ioutil"
@@ -77,6 +78,12 @@ func (r *Reader) Query(ip net.IP) (*Record, error) {
 	return r.readRecord(offset), nil
 }
 
+// Version returns qqwry version info
+func (r *Reader) Version() *Record {
+	offset := getAddrFromRecord(r.buff[r.end : r.end+7])
+	return r.readRecord(offset)
+}
+
 func (r *Reader) readRecord(offset uint32) *Record {
 	rq := &Record{}
 
@@ -93,10 +100,10 @@ func (r *Reader) readRecord(offset uint32) *Record {
 	var country []byte
 	if mode == redirectMode2 {
 		off1 := r.readUint32FromByte3(offset + 1)
-		country = r.readString(off1)
+		country = readCString(r.buff[off1:])
 		offset += 4
 	} else {
-		country = r.readString(offset)
+		country = readCString(r.buff[offset:])
 		offset += uint32(len(country)) + 1
 	}
 
@@ -105,7 +112,7 @@ func (r *Reader) readRecord(offset uint32) *Record {
 	if mode == redirectMode2 {
 		offset = r.readUint32FromByte3(offset + 1)
 	}
-	area := r.readString(offset)
+	area := readCString(r.buff[offset:])
 
 	// decode gbk
 	enc := simplifiedchinese.GBK.NewDecoder()
@@ -122,12 +129,13 @@ func (r *Reader) readUint32FromByte3(offset uint32) uint32 {
 	return byte3ToUInt32(r.buff[offset : offset+3])
 }
 
-func (r *Reader) readString(offset uint32) []byte {
-	for end := offset; ; end++ {
-		if r.buff[end] == 0 {
-			return r.buff[offset:end]
-		}
+func readCString(buf []byte) []byte {
+	idx := bytes.IndexByte(buf, 0)
+	if idx < 0 {
+		// TODO: return error
+		return nil
 	}
+	return buf[:idx]
 }
 
 func getIPFromRecord(buf []byte) uint32 {
