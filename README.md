@@ -12,7 +12,7 @@ Download from [GitHub Releases](https://github.com/chuangbo/xip/releases) and pl
 Or the go way:
 
 ```sh
-$ go install github.com/chuangbo/xip/v2
+$ go install github.com/chuangbo/xip/v2@latest
 ```
 
 Download QQWRY db (defaults to `~/.config/xip/qqwry.dat`)
