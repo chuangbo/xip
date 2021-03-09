@@ -81,6 +81,20 @@ func (db *DB) Query(ip net.IP) (*Record, error) {
 	return db.readRecord(offset), nil
 }
 
+// Dump all the records from the database.
+//
+// This function directly prints lots of lines to stdout.
+func (db *DB) Dump() {
+	fmt.Println("Total records:", db.total)
+	for cur := db.start; cur < db.end+7; cur += 7 {
+		buff := db.buff[cur : cur+7]
+		ip := make(net.IP, 4)
+		binary.BigEndian.PutUint32(ip, getIPFromRecord(buff))
+		offset := getAddrFromRecord(buff)
+		fmt.Printf("%s\t%s\n", ip, db.readRecord(offset))
+	}
+}
+
 // Version return the version record for the database, from the last record for 255.255.255.255.
 func (db *DB) Version() string {
 	offset := getAddrFromRecord(db.buff[db.end : db.end+7])

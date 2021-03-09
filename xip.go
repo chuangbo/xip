@@ -26,6 +26,7 @@ func main() {
 	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库文件路径")
 	cmdUpdate := flag.Bool("u", false, "更新纯真IP库")
 	cmdVersion := flag.Bool("v", false, "Print the version number of xip")
+	cmdDump := flag.Bool("dump", false, "Dump all the qqwry records")
 
 	flag.Parse()
 
@@ -50,6 +51,11 @@ func main() {
 	if err != nil {
 		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip -u 命令下载\n", dbFile)
 		log.Fatal(err)
+	}
+
+	if *cmdDump {
+		db.Dump()
+		return
 	}
 
 	if isFromPipe {
