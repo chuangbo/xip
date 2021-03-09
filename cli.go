@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/chuangbo/xip/pkg/qqwry"
+	"github.com/chuangbo/xip/v2/pkg/qqwry"
 	"github.com/fatih/color"
 )
 

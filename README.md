@@ -1,7 +1,7 @@
 # xip
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/chuangbo/xip/pkg/qqwry.svg)](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry)
-[![Go Report Card](https://goreportcard.com/badge/github.com/chuangbo/xip)](https://goreportcard.com/report/github.com/chuangbo/xip)
+[![Go Reference](https://pkg.go.dev/badge/github.com/chuangbo/xip/v2/pkg/qqwry.svg)](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chuangbo/xip/v2)](https://goreportcard.com/report/github.com/chuangbo/xip/v2)
 
 xip = 查 IP, Get ip geo information.
 
@@ -12,7 +12,7 @@ Download from [GitHub Releases](https://github.com/chuangbo/xip/releases) and pl
 Or the go way:
 
 ```sh
-$ go install github.com/chuangbo/xip
+$ go install github.com/chuangbo/xip/v2
 ```
 
 Download QQWRY db (defaults to `~/.config/xip/qqwry.dat`)
@@ -77,13 +77,13 @@ traceroute to baidu.com (220.181.38.148), 30 hops max, 60 byte packets  电信ID
 
 ## Documentation
 
-Golang package `github.com/chuangbo/xip/pkg/qqwry` implements download and query IP geo-location information
+Golang package `github.com/chuangbo/xip/v2/pkg/qqwry` implements download and query IP geo-location information
 facilities for the famous qqwry.dat database.
 
 Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests and performance improvements.
 
-* [Examples](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry#pkg-examples)
-* [Package Reference](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry)
+* [Examples](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry#pkg-examples)
+* [Package Reference](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry)
 
 ## Reference
 
