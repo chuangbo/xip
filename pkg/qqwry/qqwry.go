@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 
@@ -41,7 +41,7 @@ func Open(file string) (*DB, error) {
 	}
 	defer f.Close()
 
-	buff, err := ioutil.ReadAll(f)
+	buff, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}

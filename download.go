@@ -4,7 +4,6 @@ import (
 	"compress/zlib"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -44,7 +43,7 @@ func download(filename string) error {
 		return fmt.Errorf("could not create temp dir: %w", err)
 	}
 
-	temp, err := ioutil.TempFile(dir, name+".*.temp")
+	temp, err := os.CreateTemp(dir, name+".*.temp")
 	if err != nil {
 		return fmt.Errorf("could not create temp file: %w", err)
 	}
