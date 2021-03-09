@@ -38,7 +38,7 @@ func TestOpen(t *testing.T) {
 	}
 }
 
-func TestReader_readRecord(t *testing.T) {
+func TestDB_readRecord(t *testing.T) {
 	r, _ := Open("testdata/qqwry.dat")
 
 	type args struct {
@@ -55,14 +55,14 @@ func TestReader_readRecord(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := r.readRecord(tt.args.offset); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Reader.readRecord() = %v, want %v", got, tt.want)
+				t.Errorf("DB.readRecord() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestReader_Query(t *testing.T) {
-	r, _ := Open("testdata/qqwry.dat")
+func TestDB_Query(t *testing.T) {
+	db, _ := Open("testdata/qqwry.dat")
 
 	type args struct {
 		ip net.IP
@@ -80,36 +80,36 @@ func TestReader_Query(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := r.Query(tt.args.ip)
+			got, err := db.Query(tt.args.ip)
 			if tt.wantErr {
 				if err == nil {
-					t.Errorf("Reader.Query() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("DB.Query() error = %v, wantErr %v", err, tt.wantErr)
 				}
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Reader.Query() = %v, want %v", got, tt.want)
+				t.Errorf("DB.Query() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func BenchmarkReader_readRecord(b *testing.B) {
-	r, _ := Open("testdata/qqwry.dat")
+func BenchmarkDB_readRecord(b *testing.B) {
+	db, _ := Open("testdata/qqwry.dat")
 
 	ip := net.IP{192, 168, 1, 1}
 	iplong := binary.BigEndian.Uint32(ip)
-	offset := r.search(iplong)
+	offset := db.search(iplong)
 
 	for n := 0; n < b.N; n++ {
-		r.readRecord(offset)
+		db.readRecord(offset)
 	}
 }
 
-func BenchmarkReader_Query(b *testing.B) {
-	r, _ := Open("testdata/qqwry.dat")
+func BenchmarkDB_Query(b *testing.B) {
+	db, _ := Open("testdata/qqwry.dat")
 
 	for n := 0; n < b.N; n++ {
-		r.Query(net.IP{192, 168, 1, 1})
+		db.Query(net.IP{192, 168, 1, 1})
 	}
 }

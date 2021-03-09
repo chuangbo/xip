@@ -15,7 +15,7 @@ import (
 var (
 	dbFile string
 
-	db *qqwry.Reader
+	db *qqwry.DB
 )
 
 var (
@@ -32,7 +32,7 @@ func main() {
 	if *cmdVersion {
 		fmt.Printf("xip: %s\n", version)
 		if db, err := qqwry.Open(dbFile); err == nil {
-			fmt.Printf("qqwry: %s\n", db.Version().City)
+			fmt.Printf("qqwry: %s\n", db.Version())
 		}
 		os.Exit(0)
 	}
@@ -66,7 +66,7 @@ func main() {
 	os.Exit(1)
 }
 
-func geoString(db *qqwry.Reader, ip net.IP) string {
+func geoString(db *qqwry.DB, ip net.IP) string {
 	r, err := db.Query(ip)
 	if err != nil {
 		return color.RedString("%w", err)

@@ -1,5 +1,8 @@
-// Package qqwry is a qqwry.dat reader, fork from https://github.com/tonywubo/qqwry
-// TODO: refactor and release as a package
+// Package qqwry implements download and query IP geo-location infomation
+// facilities for the famous qqwry.dat database.
+//
+// Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests
+// and performance improvements.
 package qqwry
 
 import (
@@ -18,20 +21,20 @@ const (
 	redirectMode2 = 0x02
 )
 
-// Reader is qqwry db reader
-type Reader struct {
+// DB is qqwry database instance.
+type DB struct {
 	buff []byte
 
 	start, end, total uint32
 }
 
-// Record is query result
+// Record is query result.
 type Record struct {
 	Country, City string
 }
 
-// Open qqwry db
-func Open(file string) (*Reader, error) {
+// Open the qqwry.dat database.
+func Open(file string) (*DB, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -46,7 +49,7 @@ func Open(file string) (*Reader, error) {
 	start := binary.LittleEndian.Uint32(buff[:4])
 	end := binary.LittleEndian.Uint32(buff[4:8])
 
-	return &Reader{
+	return &DB{
 		buff: buff,
 
 		start: start,
@@ -59,9 +62,9 @@ func (record *Record) String() string {
 	return fmt.Sprintf("%s %s", record.Country, record.City)
 }
 
-// Query ip geo info
-func (r *Reader) Query(ip net.IP) (*Record, error) {
-	if r.buff == nil {
+// Query ip geo location infomation from giving net.IP.
+func (db *DB) Query(ip net.IP) (*Record, error) {
+	if db.buff == nil {
 		return nil, fmt.Errorf("db not initialized")
 	}
 
@@ -70,49 +73,54 @@ func (r *Reader) Query(ip net.IP) (*Record, error) {
 		return nil, fmt.Errorf("not a valid ipv4 address")
 	}
 
-	offset := r.search(binary.BigEndian.Uint32(ipv4))
+	offset := db.search(binary.BigEndian.Uint32(ipv4))
 	if offset <= 0 {
 		return &Record{}, nil
 	}
 
-	return r.readRecord(offset), nil
+	return db.readRecord(offset), nil
 }
 
-// Version returns qqwry version info
-func (r *Reader) Version() *Record {
-	offset := getAddrFromRecord(r.buff[r.end : r.end+7])
-	return r.readRecord(offset)
+// Version return the version record for the database, from the last record for 255.255.255.255.
+func (db *DB) Version() string {
+	offset := getAddrFromRecord(db.buff[db.end : db.end+7])
+	return db.readRecord(offset).City
 }
 
-func (r *Reader) readRecord(offset uint32) *Record {
+// Total returns the total number of records for the database
+func (db *DB) Total() uint32 {
+	return db.total
+}
+
+func (db *DB) readRecord(offset uint32) *Record {
 	rq := &Record{}
 
 	offset += 4
-	mode := r.buff[offset]
+	mode := db.buff[offset]
 
 	// full redirect
 	if mode == redirectMode1 {
-		offset = r.readUint32FromByte3(offset + 1)
-		mode = r.buff[offset]
+		offset = db.readUint32FromByte3(offset + 1)
+		mode = db.buff[offset]
 	}
 
 	// country
 	var country []byte
 	if mode == redirectMode2 {
-		off1 := r.readUint32FromByte3(offset + 1)
-		country = readCString(r.buff[off1:])
+		off1 := db.readUint32FromByte3(offset + 1)
+		country = readCString(db.buff[off1:])
 		offset += 4
 	} else {
-		country = readCString(r.buff[offset:])
+		country = readCString(db.buff[offset:])
 		offset += uint32(len(country)) + 1
 	}
 
 	// area
-	mode = r.buff[offset]
+	mode = db.buff[offset]
 	if mode == redirectMode2 {
-		offset = r.readUint32FromByte3(offset + 1)
+		offset = db.readUint32FromByte3(offset + 1)
 	}
-	area := readCString(r.buff[offset:])
+	area := readCString(db.buff[offset:])
 
 	// decode gbk
 	enc := simplifiedchinese.GBK.NewDecoder()
@@ -125,8 +133,8 @@ func (r *Reader) readRecord(offset uint32) *Record {
 	return rq
 }
 
-func (r *Reader) readUint32FromByte3(offset uint32) uint32 {
-	return byte3ToUInt32(r.buff[offset : offset+3])
+func (db *DB) readUint32FromByte3(offset uint32) uint32 {
+	return byte3ToUInt32(db.buff[offset : offset+3])
 }
 
 func readCString(buf []byte) []byte {
@@ -146,14 +154,14 @@ func getAddrFromRecord(buf []byte) uint32 {
 	return byte3ToUInt32(buf[4:7])
 }
 
-func (r *Reader) search(ip uint32) uint32 {
+func (db *DB) search(ip uint32) uint32 {
 	left := uint32(0)
-	right := r.total
+	right := db.total
 
 	for right-left > 1 {
 		mid := (left + right) / 2
-		offset := r.start + mid*7
-		cur := getIPFromRecord(r.buff[offset : offset+7])
+		offset := db.start + mid*7
+		cur := getIPFromRecord(db.buff[offset : offset+7])
 
 		if ip < cur {
 			right = mid
@@ -162,11 +170,11 @@ func (r *Reader) search(ip uint32) uint32 {
 		}
 	}
 
-	offset := r.start + 7*left
-	ipBegin := getIPFromRecord(r.buff[offset : offset+7])
+	offset := db.start + 7*left
+	ipBegin := getIPFromRecord(db.buff[offset : offset+7])
 
-	offset = getAddrFromRecord(r.buff[offset : offset+7])
-	ipEnd := getIPFromRecord(r.buff[offset : offset+7])
+	offset = getAddrFromRecord(db.buff[offset : offset+7])
+	ipEnd := getIPFromRecord(db.buff[offset : offset+7])
 
 	if ipBegin <= ip && ip <= ipEnd {
 		return offset

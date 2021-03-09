@@ -15,7 +15,7 @@ $ go install github.com/chuangbo/xip
 Download QQWRY db (defaults to `~/.config/xip/qqwry.dat`)
 
 ```sh
-$ xip update
+$ xip -u
 Downloading to "/Users/me/.config/xip/qqwry.dat"
 332.01 KiB / 5.13 MiB [==>---------------------------------------|  59s ] 83.00 KiB/s
 ```
@@ -72,10 +72,20 @@ traceroute to baidu.com (220.181.38.148), 30 hops max, 60 byte packets  电信ID
 
 ```
 
+## Documentation
+
+Golang package `github.com/chuangbo/xip/pkg/qqwry` implements download and query IP geo-location infomation
+facilities for the famous qqwry.dat database.
+
+Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests and performance improvements.
+
+* [Examples](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry#pkg-examples)
+* [Package Reference](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry)
+
 ## Reference
 
 * [纯真IP](http://www.cz88.net/ip/) 纯真网络提供的免费离线 IP 数据库
-* [tonywubo/qqwry](https://github.com/tonywubo/qqwry) 查询纯真数据库代码是在此基础修改而来
+* [tonywubo/qqwry](https://github.com/tonywubo/qqwry) 查询纯真数据库代码在此基础，修改了一些 bug，并加上了单元测试和性能优化
 * [freshcn/qqwry](https://github.com/freshcn/qqwry/blob/master/download.go) 下载数据库代码在此基础修改而来
 * [Nali CLI](https://github.com/SukkaW/nali-cli) nodejs 编写的功能更多的工具，xip 可以认为是 Nali 的 Golang 替代品
 

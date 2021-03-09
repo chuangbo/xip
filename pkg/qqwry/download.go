@@ -17,24 +17,27 @@ const (
 	// KeyURL is url to download key
 	KeyURL = "http://update.cz88.net/ip/copywrite.rar"
 
-	// DbURL is url to download db
+	// DbURL is url to download qqwry database
 	DbURL = "http://update.cz88.net/ip/qqwry.rar"
 )
 
 // @ref https://zhangzifan.com/update-qqwry-dat.html
 
-// GetDownloadKey reads newest key and version from key url
-func GetDownloadKey() (uint32, string, error) {
+// GetUpdateInfo reads key and version from key url.
+//
+// The first return value is the key to decrypt the downloaded database.
+// The second return value is remote version from the key url.
+func GetUpdateInfo() (uint32, string, error) {
 	resp, err := http.Get(KeyURL)
 	if err != nil {
-		return 0, "", fmt.Errorf("could open key url: %w", err)
+		return 0, "", fmt.Errorf("could not open key url: %w", err)
 	}
 	defer resp.Body.Close()
 
-	return getUpdateInfo(resp.Body)
+	return readUpdateInfo(resp.Body)
 }
 
-func getUpdateInfo(r io.ReadCloser) (uint32, string, error) {
+func readUpdateInfo(r io.ReadCloser) (uint32, string, error) {
 	buf, err := io.ReadAll(r)
 	if err != nil {
 		return 0, "", fmt.Errorf("could not read from key url: %w", err)
@@ -49,23 +52,27 @@ func getUpdateInfo(r io.ReadCloser) (uint32, string, error) {
 	return key, string(version), nil
 }
 
-// Downloader is a reader with decryption
+// downloader is a reader with decryption
 type downloader struct {
 	r    io.Reader
 	resp *http.Response
 }
 
-// Read from decrypted header and http body
+// Read from decrypted header and http body.
 func (dr *downloader) Read(buf []byte) (int, error) {
 	return dr.r.Read(buf)
 }
 
-// Close http body
+// Close http body.
 func (dr *downloader) Close() error {
 	return dr.resp.Body.Close()
 }
 
-// Download create a io.ReadCloser from db url with provided key
+// Download create a io.ReadCloser from database url with provided key.
+//
+// The first return value is total bytes of content length,
+// the second return value is a io.ReadCloser, caller should
+// read the content the close after use.
 func Download(key uint32) (int64, io.ReadCloser, error) {
 	resp, err := http.Get(DbURL)
 	if err != nil {
@@ -93,10 +100,11 @@ func Download(key uint32) (int64, io.ReadCloser, error) {
 	return resp.ContentLength, dr, nil
 }
 
-// SameVersion compare remote version from copywrite.rar and local version from qqwry db
+// SameVersion compare remote version from copywrite.rar and local version from qqwry database.
+//
 // Version formats:
-// remote: 纯真IP地址数据库 2021年02月25日
-// local: 2021年02月02日IP数据
+// remote - "纯真IP地址数据库 2021年02月25日".
+// local - "2021年02月02日IP数据".
 func SameVersion(remote, local string) bool {
 	splits := strings.Split(remote, " ")
 	if len(splits) != 2 {

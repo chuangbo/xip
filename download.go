@@ -15,14 +15,14 @@ import (
 )
 
 func download(filename string) error {
-	key, remoteVersion, err := qqwry.GetDownloadKey()
+	key, remoteVersion, err := qqwry.GetUpdateInfo()
 	if err != nil {
 		return fmt.Errorf("could not get key: %w", err)
 	}
 
 	if db, err := qqwry.Open(filename); err == nil {
-		localVersion := db.Version().City
-		if qqwry.SameVersion(remoteVersion, db.Version().City) {
+		localVersion := db.Version()
+		if qqwry.SameVersion(remoteVersion, localVersion) {
 			return fmt.Errorf("当前IP库已是最新版本，无需更新: %s", localVersion)
 		}
 		fmt.Printf("更新IP库：%s => %s\n", localVersion, remoteVersion)

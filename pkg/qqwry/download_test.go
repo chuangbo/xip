@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func Test_getUpdateInfo(t *testing.T) {
+func Test_readUpdateInfo(t *testing.T) {
 	tests := []struct {
 		name        string
 		filename    string
@@ -18,7 +18,7 @@ func Test_getUpdateInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f, _ := os.Open(tt.filename)
-			got, got1, err := getUpdateInfo(f)
+			got, got1, err := readUpdateInfo(f)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getUpdateInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return

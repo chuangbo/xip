@@ -11,7 +11,7 @@ import (
 )
 
 // xip 1.1.1.1 baidu.com
-func cliMode(db *qqwry.Reader, args []string) {
+func cliMode(db *qqwry.DB, args []string) {
 	var ips []net.IP
 	for _, arg := range flag.Args() {
 		result, err := argToIPs(arg)

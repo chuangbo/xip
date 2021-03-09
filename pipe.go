@@ -23,7 +23,7 @@ func fromPipe() bool {
 }
 
 // traceroute baidu.com | xip
-func pipeMode(db *qqwry.Reader) {
+func pipeMode(db *qqwry.DB) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -31,7 +31,7 @@ func pipeMode(db *qqwry.Reader) {
 	}
 }
 
-func findGeoStr(db *qqwry.Reader, text string) string {
+func findGeoStr(db *qqwry.DB, text string) string {
 	ip := regEx.FindString(text)
 	if ip == "" {
 		return ""
