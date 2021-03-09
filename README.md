@@ -74,7 +74,7 @@ traceroute to baidu.com (220.181.38.148), 30 hops max, 60 byte packets  电信ID
 
 ## Documentation
 
-Golang package `github.com/chuangbo/xip/pkg/qqwry` implements download and query IP geo-location infomation
+Golang package `github.com/chuangbo/xip/pkg/qqwry` implements download and query IP geo-location information
 facilities for the famous qqwry.dat database.
 
 Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests and performance improvements.

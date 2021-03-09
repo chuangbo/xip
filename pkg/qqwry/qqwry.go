@@ -1,4 +1,4 @@
-// Package qqwry implements download and query IP geo-location infomation
+// Package qqwry implements download and query IP geo-location information
 // facilities for the famous qqwry.dat database.
 //
 // Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests
@@ -62,7 +62,7 @@ func (record *Record) String() string {
 	return fmt.Sprintf("%s %s", record.Country, record.City)
 }
 
-// Query ip geo location infomation from giving net.IP.
+// Query ip geo location information from giving net.IP.
 func (db *DB) Query(ip net.IP) (*Record, error) {
 	if db.buff == nil {
 		return nil, fmt.Errorf("db not initialized")
