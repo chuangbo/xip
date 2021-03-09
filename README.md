@@ -1,5 +1,8 @@
 # xip
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/chuangbo/xip/pkg/qqwry.svg)](https://pkg.go.dev/github.com/chuangbo/xip/pkg/qqwry)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chuangbo/xip)](https://goreportcard.com/report/github.com/chuangbo/xip)
+
 xip = 查 IP, Get ip geo information.
 
 ## Installation
