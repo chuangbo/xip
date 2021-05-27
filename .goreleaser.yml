@@ -16,21 +16,21 @@ builds:
 
 archives:
   - format_overrides:
-    - goos: windows
-      format: zip
+      - goos: windows
+        format: zip
     replacements:
       amd64: x86_64
     wrap_in_directory: true
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^readme:'
-      - '^test:'
-      - '^chore:'
-      - '^ci:'
+      - "^docs:"
+      - "^readme:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
