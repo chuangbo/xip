@@ -6,12 +6,12 @@ import (
 	"log"
 	"net"
 
-	"github.com/chuangbo/xip/v2/pkg/qqwry"
 	"github.com/fatih/color"
+	"github.com/ipipdotnet/ipdb-go"
 )
 
 // xip 1.1.1.1 baidu.com
-func cliMode(db *qqwry.DB, args []string) {
+func cliMode(db *ipdb.City, args []string) {
 	var ips []net.IP
 	for _, arg := range flag.Args() {
 		result, err := argToIPs(arg)
@@ -22,7 +22,7 @@ func cliMode(db *qqwry.DB, args []string) {
 	}
 
 	for _, ip := range ips {
-		result := geoString(db, ip)
+		result := geoString(db, ip.String())
 		fmt.Fprintf(color.Output, "%s\t%s\n", ip, result)
 	}
 }

@@ -4,37 +4,27 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"os"
+	"strings"
 
-	"github.com/chuangbo/xip/v2/pkg/qqwry"
 	"github.com/fatih/color"
+	"github.com/ipipdotnet/ipdb-go"
 	"github.com/mitchellh/go-homedir"
 )
 
-var (
-	dbFile string
-
-	db *qqwry.DB
-)
-
-var (
-	defaultDbFile, _ = homedir.Expand("~/.config/xip/qqwry.dat")
-)
-
 func main() {
-	flag.StringVar(&dbFile, "db", defaultDbFile, "纯真IP库文件路径")
+	var dbFile string
+	defaultDbFile, _ := homedir.Expand("~/.config/xip/qqwry.ipdb")
+
+	flag.StringVar(&dbFile, "db", defaultDbFile, "IP库文件路径")
 	cmdUpdate := flag.Bool("u", false, "更新纯真IP库")
 	cmdVersion := flag.Bool("v", false, "Print the version number of xip")
-	cmdDump := flag.Bool("dump", false, "Dump all the qqwry records")
 
 	flag.Parse()
 
 	if *cmdVersion {
 		fmt.Printf("xip: %s\n", version)
-		if db, err := qqwry.Open(dbFile); err == nil {
-			fmt.Printf("qqwry: %s\n", db.Version())
-		}
+		printDbInfo(dbFile)
 		os.Exit(0)
 	}
 
@@ -42,20 +32,25 @@ func main() {
 		if err := download(dbFile); err != nil {
 			log.Fatal(err)
 		}
+		printDbInfo(dbFile)
 		os.Exit(0)
 	}
 
 	isFromPipe := fromPipe()
 
-	db, err := qqwry.Open(dbFile)
-	if err != nil {
-		fmt.Printf("纯真IP库 \"%s\" 不存在，可以使用 xip -u 命令下载\n", dbFile)
-		log.Fatal(err)
+	// 如果 db 文件不存在，先下载
+	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+		fmt.Printf("下载纯真IP库 \"%s\"...\n", dbFile)
+		if err := download(dbFile); err != nil {
+			log.Fatal(err)
+		}
+		printDbInfo(dbFile)
 	}
 
-	if *cmdDump {
-		db.Dump()
-		return
+	db, err := ipdb.NewCity(dbFile)
+	if err != nil {
+		fmt.Printf("IP库 \"%s\" 错误，可以使用 xip -u 命令重新下载\n", dbFile)
+		log.Fatal(err)
 	}
 
 	if isFromPipe {
@@ -72,15 +67,59 @@ func main() {
 	os.Exit(1)
 }
 
-func geoString(db *qqwry.DB, ip net.IP) string {
-	r, err := db.Query(ip)
+func geoString(db *ipdb.City, ip string) string {
+	r, err := db.FindInfo(ip, "CN")
 	if err != nil {
-		return color.RedString("%w", err)
+		return color.RedString("%v", err)
 	}
 
 	return colorful(r)
 }
 
-func colorful(r *qqwry.Record) string {
-	return fmt.Sprintf("%s %s", color.CyanString(r.City), color.MagentaString(r.Country))
+func colorful(r *ipdb.CityInfo) string {
+	if r == nil {
+		return color.RedString("未知")
+	}
+
+	parts := []string{}
+
+	if r.CountryName != "" {
+		parts = append(parts, color.MagentaString(r.CountryName))
+	}
+
+	if r.RegionName != "" {
+		parts = append(parts, color.CyanString(r.RegionName))
+	}
+
+	if r.CityName != "" {
+		parts = append(parts, color.GreenString(r.CityName))
+	}
+
+	if r.OwnerDomain != "" {
+		parts = append(parts, color.BlueString(r.OwnerDomain))
+	}
+
+	if r.IspDomain != "" {
+		parts = append(parts, color.YellowString(r.IspDomain))
+	}
+
+	if len(parts) == 0 {
+		return color.RedString("未知")
+	}
+
+	return strings.Join(parts, " ")
+}
+
+func printDbInfo(dbFile string) {
+	db, err := ipdb.NewCity(dbFile)
+	if err != nil {
+		return
+	}
+	fmt.Println("\nIP 库信息:")
+	fmt.Printf("db file: %s\n", dbFile)            // database file path
+	fmt.Printf("ipv4 support: %v\n", db.IsIPv4())  // check database support ip type
+	fmt.Printf("ipv6 support: %v\n", db.IsIPv6())  // check database support ip type
+	fmt.Printf("build time: %v\n", db.BuildTime()) // database build time
+	fmt.Printf("languages: %v\n", db.Languages())  // database support language
+	fmt.Printf("fields: %v\n", db.Fields())        // database support fields
 }

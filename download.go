@@ -1,41 +1,37 @@
 package main
 
 import (
-	"compress/zlib"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/chuangbo/xip/v2/pkg/qqwry"
-	"github.com/vbauerster/mpb/v6"
-	"github.com/vbauerster/mpb/v6/decor"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 func download(filename string) error {
-	key, remoteVersion, err := qqwry.GetUpdateInfo()
+	url := "https://unpkg.com/qqwry.ipdb/qqwry.ipdb"
+	// url = "https://cdn.jsdelivr.net/npm/qqwry.ipdb/qqwry.ipdb"
+	fmt.Printf("Downloading \"%s\" to \"%s\"\n", url, filename)
+
+	resp, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("could not get key: %w", err)
+		return fmt.Errorf("could not download \"%s\": %v", url, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("could not download \"%s\": bad status code %s", url, resp.Status)
 	}
 
-	if db, err := qqwry.Open(filename); err == nil {
-		localVersion := db.Version()
-		if qqwry.SameVersion(remoteVersion, localVersion) {
-			return fmt.Errorf("当前IP库已是最新版本，无需更新: %s", localVersion)
-		}
-		fmt.Printf("更新IP库：%s => %s\n", localVersion, remoteVersion)
-	} else {
-		fmt.Printf("下载IP库：%s\n", remoteVersion)
+	totalSize := resp.ContentLength
+	if totalSize <= 0 {
+		fmt.Println("Could not determine file size from Content-Length header.")
+		// Handle cases where Content-Length is missing or invalid
 	}
-
-	total, dr, err := qqwry.Download(key)
-	if err != nil {
-		return fmt.Errorf("could not download db: %w", err)
-	}
-	defer dr.Close()
-
-	fmt.Printf("Downloading to \"%s\"\n", filename)
 
 	dir, name := filepath.Split(filename)
 
@@ -48,19 +44,17 @@ func download(filename string) error {
 		return fmt.Errorf("could not create temp file: %w", err)
 	}
 
-	p, bar := progressBar(total, dr)
-	defer bar.Close()
+	p, bar := progressBar(totalSize)
 
-	// unzip
-	// the reason to move gunzip out of qqwry package is for showing the correct progress
-	z, err := zlib.NewReader(bar)
-	if err != nil {
-		return fmt.Errorf("could not create zlib reader: %w", err)
-	}
+	proxyReader := bar.ProxyReader(resp.Body)
+	defer proxyReader.Close()
 
 	// save to file
-	if _, err := io.Copy(temp, z); err != nil {
+	if _, err := io.Copy(temp, proxyReader); err != nil {
 		return fmt.Errorf("could not download file: %w", err)
+	}
+	if totalSize <= 0 {
+		bar.SetTotal(-1, true) // triggering complete event now
 	}
 	// wait for our bar to complete and flush
 	p.Wait()
@@ -76,24 +70,23 @@ func download(filename string) error {
 	return nil
 }
 
-func progressBar(total int64, r io.Reader) (*mpb.Progress, io.ReadCloser) {
+func progressBar(total int64) (*mpb.Progress, *mpb.Bar) {
 	p := mpb.New(
 		mpb.WithWidth(60),
 		mpb.WithRefreshRate(time.Second),
 	)
 
-	bar := p.Add(total,
-		mpb.NewBarFiller("[=>-|"),
+	bar := p.AddBar(total,
 		mpb.PrependDecorators(
 			decor.CountersKibiByte("% .2f / % .2f"),
 		),
 		mpb.AppendDecorators(
 			decor.OnComplete(decor.AverageETA(decor.ET_STYLE_GO, decor.WC{W: 4}), "done"),
 			decor.Name(" ] "),
-			decor.AverageSpeed(decor.UnitKiB, "% .2f", decor.WC{W: 4}),
+			decor.AverageSpeed(decor.SizeB1024(0), "% .2f", decor.WC{W: 4}),
 		),
 	)
 
 	// create proxy reader
-	return p, bar.ProxyReader(r)
+	return p, bar
 }

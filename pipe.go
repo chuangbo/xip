@@ -3,12 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"net"
 	"os"
 	"regexp"
 
-	"github.com/chuangbo/xip/v2/pkg/qqwry"
 	"github.com/fatih/color"
+	"github.com/ipipdotnet/ipdb-go"
 )
 
 var (
@@ -23,7 +22,7 @@ func fromPipe() bool {
 }
 
 // traceroute baidu.com | xip
-func pipeMode(db *qqwry.DB) {
+func pipeMode(db *ipdb.City) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -31,16 +30,11 @@ func pipeMode(db *qqwry.DB) {
 	}
 }
 
-func findGeoStr(db *qqwry.DB, text string) string {
+func findGeoStr(db *ipdb.City, text string) string {
 	ip := regEx.FindString(text)
 	if ip == "" {
 		return ""
 	}
 
-	ipv4 := net.ParseIP(ip)
-	if ipv4 == nil {
-		return ""
-	}
-
-	return geoString(db, ipv4)
+	return geoString(db, ip)
 }

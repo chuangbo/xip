@@ -1,7 +1,6 @@
 # xip
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/chuangbo/xip/v2/pkg/qqwry.svg)](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry)
-[![Go Report Card](https://goreportcard.com/badge/github.com/chuangbo/xip/v2)](https://goreportcard.com/report/github.com/chuangbo/xip/v2)
+[![Go Report Card](https://goreportcard.com/badge/github.com/chuangbo/xip/v3)](https://goreportcard.com/report/github.com/chuangbo/xip/v3)
 
 xip = 查 IP, Get ip geo information.
 
@@ -12,14 +11,14 @@ Download from [GitHub Releases](https://github.com/chuangbo/xip/releases) and pl
 Or the go way:
 
 ```sh
-$ go install github.com/chuangbo/xip/v2@latest
+$ go install github.com/chuangbo/xip/v3@latest
 ```
 
-Download QQWRY db (defaults to `~/.config/xip/qqwry.dat`)
+Download [qqwry.ipdb](https://github.com/metowolf/qqwry.ipdb) (defaults to `~/.config/xip/qqwry.ipdb`)
 
 ```sh
 $ xip -u
-Downloading to "/Users/me/.config/xip/qqwry.dat"
+Downloading to "/Users/me/.config/xip/qqwry.ipdb"
 332.01 KiB / 5.13 MiB [==>---------------------------------------|  59s ] 83.00 KiB/s
 ```
 
@@ -75,21 +74,9 @@ traceroute to baidu.com (220.181.38.148), 30 hops max, 60 byte packets  电信ID
 
 ```
 
-## Documentation
-
-Golang package `github.com/chuangbo/xip/v2/pkg/qqwry` implements download and query IP geo-location information
-facilities for the famous qqwry.dat database.
-
-Inspired from github.com/tonywubo/qqwry, with bug fixes, unit tests and performance improvements.
-
-* [Examples](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry#pkg-examples)
-* [Package Reference](https://pkg.go.dev/github.com/chuangbo/xip/v2/pkg/qqwry)
-
 ## Reference
 
-* [纯真IP](http://www.cz88.net/ip/) 纯真网络提供的免费离线 IP 数据库
-* [tonywubo/qqwry](https://github.com/tonywubo/qqwry) 查询纯真数据库代码在此基础，修改了一些 bug，并加上了单元测试和性能优化
-* [freshcn/qqwry](https://github.com/freshcn/qqwry/blob/master/download.go) 下载数据库代码在此基础修改而来
+* [qqwry.ipdb](https://github.com/metowolf/qqwry.ipdb) 纯真数据库 IPIP.net 格式版
 * [Nali CLI](https://github.com/SukkaW/nali-cli) nodejs 编写的功能更多的工具，xip 可以认为是 Nali 的 Golang 替代品
 
 ## Author
