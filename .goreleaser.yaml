@@ -1,6 +1,12 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
 before:
   hooks:
-    - go mod download
+    - go mod tidy
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -15,16 +21,13 @@ builds:
       - -trimpath
 
 archives:
-  - format_overrides:
+  - formats: [tar.gz]
+    # use zip for windows archives
+    format_overrides:
       - goos: windows
-        format: zip
-    replacements:
-      amd64: x86_64
+        formats: [zip]
     wrap_in_directory: true
-checksum:
-  name_template: "checksums.txt"
-snapshot:
-  name_template: "{{ .Tag }}-next"
+
 changelog:
   sort: asc
   filters:
