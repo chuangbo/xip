@@ -83,24 +83,24 @@ func colorful(r *ipdb.CityInfo) string {
 
 	parts := []string{}
 
-	if r.CountryName != "" {
-		parts = append(parts, color.MagentaString(r.CountryName))
-	}
-
-	if r.RegionName != "" {
-		parts = append(parts, color.CyanString(r.RegionName))
-	}
-
-	if r.CityName != "" {
-		parts = append(parts, color.GreenString(r.CityName))
+	if r.IspDomain != "" {
+		parts = append(parts, color.YellowString(r.IspDomain))
 	}
 
 	if r.OwnerDomain != "" {
 		parts = append(parts, color.BlueString(r.OwnerDomain))
 	}
 
-	if r.IspDomain != "" {
-		parts = append(parts, color.YellowString(r.IspDomain))
+	if r.CityName != "" {
+		parts = append(parts, color.GreenString(r.CityName))
+	}
+
+	if r.RegionName != "" {
+		parts = append(parts, color.CyanString(r.RegionName))
+	}
+
+	if r.CountryName != "" {
+		parts = append(parts, color.MagentaString(r.CountryName))
 	}
 
 	if len(parts) == 0 {
