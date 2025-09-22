@@ -11,8 +11,10 @@ import (
 )
 
 var (
-	// ref https://regexr.com/38odc
-	regEx = regexp.MustCompile(`\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b`)
+	// ref https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
+	ipv4Regex = `\b((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\b`
+	ipv6Regex = `\b(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\b`
+	ipRegex   = regexp.MustCompile(ipv4Regex + "|" + ipv6Regex)
 )
 
 // ref: https://stackoverflow.com/questions/43947363/detect-if-a-command-is-piped-or-not
@@ -26,15 +28,11 @@ func pipeMode(db *ipdb.City) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
-		fmt.Fprintln(color.Output, text, "\t", findGeoStr(db, text))
+		ip := ipRegex.FindString(text)
+		if ip != "" {
+			fmt.Fprintln(color.Output, text, "\t", geoString(db, ip))
+		} else {
+			fmt.Fprintln(color.Output, text)
+		}
 	}
-}
-
-func findGeoStr(db *ipdb.City, text string) string {
-	ip := regEx.FindString(text)
-	if ip == "" {
-		return ""
-	}
-
-	return geoString(db, ip)
 }
